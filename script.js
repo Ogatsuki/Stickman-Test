@@ -62,8 +62,36 @@ ctx.stroke();
 //   }, 2000)
 // })
 
-new Promise((resolve, reject) => {
-  console.log("test1");
-  resolve();
-}).then(() => {console.log("test2");});
-console.log("test3");
+let canvasLeft;
+let canvasLeftInt;
+let movingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
+
+function findCanvasLeftInt() {
+  canvasLeft = window.getComputedStyle(canvas).left;
+  canvasLeftInt = parseInt(canvasLeft);
+  return canvasLeftInt;
+}
+
+function timeout(delay) {
+  return new Promise(resolve => {
+    setTimeout(resolve, delay);
+  })
+}
+
+async function run() {
+  console.log("function started.");
+
+  while(findCanvasLeftInt() <= parseInt(window.innerWidth)) { 
+    await timeout(2);
+    canvas.style.left = canvasLeftInt + 2 + "px";
+    console.log(canvasLeft);
+
+    if(findCanvasLeftInt() > movingRangeInt) {
+      break;
+    }
+  }
+
+  console.log("function ended.");
+}
+
+button.addEventListener("click", run);
