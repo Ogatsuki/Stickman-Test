@@ -48,20 +48,6 @@ ctx.moveTo(...waist);
 ctx.lineTo(...lfoot);
 ctx.stroke();
 
-// button.addEventListener("click", function() {
-//   let timerId = setInterval(function() {
-//     let canvasStyle = window.getComputedStyle(canvas);
-//     let left = canvasStyle.getPropertyValue("left");
-//     let leftValue = parseInt(left, 10);
-//     leftValue += 1;
-//     console.log(leftValue);
-//     canvas.style.left = leftValue + 'px';
-//   }, 2);
-//   setTimeout(function() {
-//     clearInterval(timerId);
-//   }, 2000)
-// })
-
 let canvasLeft;
 let canvasLeftInt;
 let movingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
