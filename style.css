@@ -2,10 +2,11 @@ body {
   margin: 0;
 }
 
-.l-wrapper {
+.l-bWrapper {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+}
+
+.l-cWrapper {
   position: relative;
 }
 
