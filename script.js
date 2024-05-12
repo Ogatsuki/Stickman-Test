@@ -2,25 +2,27 @@
 const canvas = document.getElementById("myCanvas");
 const start = document.getElementById("start");
 const reset = document.getElementById("reset");
-let rhandAngle = Math.PI * 1/6;
-let lhandAngle = Math.PI * 5/6;
-
 let ctx = canvas.getContext("2d");
 let neck = [150, 200];
 let shoulder = [150, 230];
-let rhand = [shoulder[0] + 70 * Math.cos(rhandAngle), shoulder[1] + 70 * Math.sin(rhandAngle)];
-let lhand = [shoulder[0] + 70 * Math.cos(lhandAngle), shoulder[1] + 70 * Math.sin(lhandAngle)];
 let waist = [150, 330];
-let rfoot = [200, 440];
-let lfoot = [100, 440];
+let armLength = 100;
+let rUpperArm;
+let lUpperArm;
+let UpperArmLength = 50;
+let rhand;
+let lhand;
+let lowerArmLength = 50;
+let rThigh;
+let lThigh;
+let thighLength = 70;
+let rLowerLeg = [200, 440];
+let llowerLeg = [100, 440];
+let lowerLegLength = 70;
+let stopFlag = false;
+let reverseFlag = false;
 
 
-function renewHandAngle(ra, la) {
-  rhand[0] = shoulder[0] + 70 * Math.cos(ra);
-  rhand[1] = shoulder[1] + 70 * Math.sin(ra);
-  lhand[0] = shoulder[0] + 70 * Math.cos(la);
-  lhand[1] = shoulder[1] + 70 * Math.sin(la);
-}
 
 function drawStickman() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -38,39 +40,55 @@ function drawStickman() {
   ctx.lineTo(...waist);
   ctx.stroke();
   
-  // 右手
+  // 右上腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...rhand);
+  ctx.lineTo(...rArm);
   ctx.stroke();
-  
-  // 左手
+
+  // 右前腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...lhand);
+  ctx.lineTo(...rArm);
   ctx.stroke();
   
-  // 右足
+  // 左上腕
   ctx.beginPath();
-  ctx.moveTo(...waist);
-  ctx.lineTo(...rfoot);
+  ctx.moveTo(...shoulder);
+  ctx.lineTo(...lArm);
+  ctx.stroke();
+
+  // 左前腕
+  ctx.beginPath();
+  ctx.moveTo(...shoulder);
+  ctx.lineTo(...rArm);
   ctx.stroke();
   
-  // 左足
+  // 右大腿
   ctx.beginPath();
   ctx.moveTo(...waist);
-  ctx.lineTo(...lfoot);
+  ctx.lineTo(...rLowerLeg);
   ctx.stroke();
+  
+  // 左大腿
+  ctx.beginPath();
+  ctx.moveTo(...waist);
+  ctx.lineTo(...llowerLeg);
+  ctx.stroke();
+
+  // 右下腿
+
+  // 左下腿
 }
 
 function resetStickman() {
   neck = [150, 200];
   shoulder = [150, 230];
-  rhand = [200, 270];
-  lhand = [100, 270];
+  rArm = [200, 270];
+  lArm = [100, 270];
   waist = [150, 330];
-  rfoot = [200, 440];
-  lfoot = [100, 440];
+  rLowerLeg = [200, 440];
+  llowerLeg = [100, 440];
 
   drawStickman();
 
@@ -88,12 +106,28 @@ drawStickman();
 
 
 
+let globalAngle = 0;
 let canvasLeft;
 let canvasLeftInt;
-let movingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
-let rfootPositionIncrement = 1;
-let rhandAngleIncrement = Math.PI * 1/120;
+let CanvasBOxMovingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
+let rLowerLegPositionIncrement = 1;
+let rArmAngleIncrement = Math.PI * 1/120;
+let deltaGlobalAngle = Math.PI * 1/180;
 
+
+function sumArrayAngle(array1, angle, radius) {
+  let arrayA = [,];
+  arrayA[0] = array1[0] + radius * Math.cos(angle);
+  arrayA[1] = array1[1] + radius * Math.sin(angle);
+  return arrayA;
+}
+
+// タイマー
+function timeout(delay) {
+  return new Promise(resolve => {
+    setTimeout(resolve, delay);
+  })
+}
 
 // canvasボックスの移動距離を測る
 function getCanvasLeftInt() {
@@ -102,11 +136,35 @@ function getCanvasLeftInt() {
   return canvasLeftInt;
 }
 
-// タイマー
-function timeout(delay) {
-  return new Promise(resolve => {
-    setTimeout(resolve, delay);
-  })
+// globalAngleを少しずつ変化させる
+function globalAnglePlusDelta(globalAngle, deltaGLobalAngle) {
+  globalAngle += deltaGlobalAngle;
+}
+
+// globalRhythmを作る
+function makeGlobalRhythmedAngleFromGlobalAngle(globalAngle) {
+  let globalToneL = Math.cos(globalAngle);
+  let globalRhythmedAngleL = Math.PI * 1/2 + Math.PI * 1/2 * globalToneL;
+  let globalToneR = Math.cos(Math.PI - globalAngle);
+  let globalRhythmedAngleR = Math.PI * 1/2 + Math.PI * 1/2 * globalToneR;
+}
+
+
+// 手の位置更新
+function makeHandsPosition(globalRhythmedAngleR, globalRhythmedAngleL) {
+  rArm = sumArrayAngle(shoulder, globalRhythmedAngleR, armLength);
+  lArm = sumArrayAngle(shoulder, (Math.PI - globalRhythmedAngleL), armLength);
+}
+
+// 大腿の位置を計算
+function makeKneePositionFromGlobalRhythmedAngle(globalRhythmedAngle) {
+  rLowerLeg = sumArrayAngle(waist, globalRhythmedAngle, lowerLegLength);
+  lLowerLeg = sumArrayAngle(waist, globalRhythmedAngle)
+}
+
+// 下腿の位置を計算
+function makeFeetPositionFromGlobalRhythmedAngle(globalRhythmedAngle) {
+
 }
 
 async function run() {
@@ -117,32 +175,33 @@ async function run() {
     canvas.style.left = canvasLeftInt + 1 + "px";
     
     // 手足の位置更新
-    rfoot[0] = rfoot[0] + rfootPositionIncrement;
-    lfoot[0] = lfoot[0] + -rfootPositionIncrement;
-    rhandAngle += rhandAngleIncrement;
-    lhandAngle -= rhandAngleIncrement;
-    renewHandAngle(rhandAngle, lhandAngle);
+    rLowerLeg[0] = rLowerLeg[0] + rLowerLegPositionIncrement;
+    llowerLeg[0] = llowerLeg[0] + -rLowerLegPositionIncrement;
+    rArmAngle += rArmAngleIncrement;
+    renewHandPosition(rArmAngle);
     drawStickman();
 
     // 手足の移動制限+方向転換
-    if(rfoot[0] <= 100 && rfootPositionIncrement == -1) {
-      rfootPositionIncrement = 1;
+    if(rLowerLeg[0] <= 100 && rLowerLegPositionIncrement == -1) {
+      rLowerLegPositionIncrement = 1;
     }
-    else if(200 <= rfoot[0] && rfootPositionIncrement == 1) {
-      rfootPositionIncrement = -1;
+    else if(200 <= rLowerLeg[0] && rLowerLegPositionIncrement == 1) {
+      rLowerLegPositionIncrement = -1;
     }
     else {
     }
-
-    if(rhandAngle >= Math.PI * 5/6 && rhandAngleIncrement == Math.PI * 1/120) {
-      rhandAngleIncrement = -Math.PI * 1/120;
+    if(rArmAngle >= Math.PI * 2/3 && rArmAngleIncrement > 0) {
+      rArmAngleIncrement = -rArmAngleIncrement;
     }
-    else if(rhandAngle <= Math.PI * 1/6 && rhandAngleIncrement == -Math.PI * 1/120) {
-      rhandAngleIncrement = Math.PI * 1/120;
+    else if(rArmAngle <= Math.PI * 1/3 && rArmAngleIncrement < 0) {
+      rArmAngleIncrement = -rArmAngleIncrement;
     }
 
 
-    if(getCanvasLeftInt() > movingRangeInt) {
+    if(getCanvasLeftInt() > CanvasBOxMovingRangeInt) {
+      stopFlag = ture;
+    }
+    if(stopFlag) {
       console.log("moving ended");
       break;
     }
