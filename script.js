@@ -7,14 +7,14 @@ let neck = [150, 200];
 let shoulder = [150, 230];
 let waist = [150, 330];
 let armLength = 100;
-let rUpperArm;
-let lUpperArm;
+let rUpperArm = [,];
+let lUpperArm = [,];
 let UpperArmLength = 50;
-let rhand;
-let lhand;
+let rhand = [,];
+let lhand = [,];
 let lowerArmLength = 50;
-let rThigh;
-let lThigh;
+let rThigh = [,];
+let lThigh = [,];
 let thighLength = 70;
 let rLowerLeg = [200, 440];
 let llowerLeg = [100, 440];
@@ -43,42 +43,51 @@ function drawStickman() {
   // 右上腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...rArm);
+  ctx.lineTo(...rUpperArm);
   ctx.stroke();
 
   // 右前腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...rArm);
+  ctx.lineTo(...rHand);
   ctx.stroke();
   
   // 左上腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...lArm);
+  ctx.lineTo(...lUpperArm);
   ctx.stroke();
 
   // 左前腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...rArm);
+  ctx.lineTo(...rHand);
   ctx.stroke();
   
-  // 右大腿
+  // 右腿
+  ctx.beginPath();
+  ctx.moveTo(...waist);
+  ctx.lineTo(...rThigh);
+  ctx.stroke();
+
+  // 左腿
+  ctx.beginPath();
+  ctx.moveTo(...waist);
+  ctx.lineTo(...lThigh);
+  ctx.stroke();
+
+  // 右下腿
   ctx.beginPath();
   ctx.moveTo(...waist);
   ctx.lineTo(...rLowerLeg);
   ctx.stroke();
   
-  // 左大腿
+  // 左下腿
   ctx.beginPath();
   ctx.moveTo(...waist);
   ctx.lineTo(...llowerLeg);
   ctx.stroke();
 
-  // 右下腿
-
-  // 左下腿
 }
 
 function resetStickman() {
@@ -107,15 +116,13 @@ drawStickman();
 
 
 let globalAngle = 0;
+let deltaGlobalAngle = Math.PI * 1/180;
 let canvasLeft;
 let canvasLeftInt;
-let CanvasBOxMovingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
-let rLowerLegPositionIncrement = 1;
-let rArmAngleIncrement = Math.PI * 1/120;
-let deltaGlobalAngle = Math.PI * 1/180;
+let CanvasBoxMovingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
 
 
-function sumArrayAngle(array1, angle, radius) {
+function getArraySummingArrayAngle(array1, angle, radius) {
   let arrayA = [,];
   arrayA[0] = array1[0] + radius * Math.cos(angle);
   arrayA[1] = array1[1] + radius * Math.sin(angle);
@@ -141,25 +148,36 @@ function globalAnglePlusDelta(globalAngle, deltaGLobalAngle) {
   globalAngle += deltaGlobalAngle;
 }
 
-// globalRhythmを作る
-function makeGlobalRhythmedAngleFromGlobalAngle(globalAngle) {
+// globalToneR,Lを作る
+function getGlobalToneArray(globalAngle) {
   let globalToneL = Math.cos(globalAngle);
-  let globalRhythmedAngleL = Math.PI * 1/2 + Math.PI * 1/2 * globalToneL;
   let globalToneR = Math.cos(Math.PI - globalAngle);
-  let globalRhythmedAngleR = Math.PI * 1/2 + Math.PI * 1/2 * globalToneR;
+  return [globalToneR, globalToneL];
 }
 
+// 体のパーツの各角度を計算
+function getArrayContainsPartsAngles(gToneR, gToneL, basePosition, amplitude) {
+  let aL = basePosition + amplitude * gToneL;
+  let aR = basePosition + amplitude * gToneR;
+  return [aR, aL];
+}
 
-// 手の位置更新
-function makeHandsPosition(globalRhythmedAngleR, globalRhythmedAngleL) {
-  rArm = sumArrayAngle(shoulder, globalRhythmedAngleR, armLength);
-  lArm = sumArrayAngle(shoulder, (Math.PI - globalRhythmedAngleL), armLength);
+// 上腕の位置をセット
+function setUpperArmsPosition(upperArmAR, upperArmAL) {
+  rUpperArm = getArraySummingArrayAngle(shoulder, upperArmAR, upperArmLength)
+  lUpperArm = getArraySummingArrayAngle(shoulder, upperArmAL, upperArmLength)
+}
+
+// 前腕の位置更新
+function setHandsPosition(handAR, handAL) {
+  rHand = getArraySummingArrayAngle(rUpperArm, handAR, armLength);
+  lHand = getArraySummingArrayAngle(lUpperArm, (Math.PI - globalRhythmedAngleL), armLength);
 }
 
 // 大腿の位置を計算
 function makeKneePositionFromGlobalRhythmedAngle(globalRhythmedAngle) {
-  rLowerLeg = sumArrayAngle(waist, globalRhythmedAngle, lowerLegLength);
-  lLowerLeg = sumArrayAngle(waist, globalRhythmedAngle)
+  rLowerLeg = getArraySummingArrayAngle(waist, globalRhythmedAngle, lowerLegLength);
+  lLowerLeg = getArraySummingArrayAngle(waist, globalRhythmedAngle)
 }
 
 // 下腿の位置を計算
@@ -198,7 +216,7 @@ async function run() {
     }
 
 
-    if(getCanvasLeftInt() > CanvasBOxMovingRangeInt) {
+    if(getCanvasLeftInt() > CanvasBoxMovingRangeInt) {
       stopFlag = ture;
     }
     if(stopFlag) {
