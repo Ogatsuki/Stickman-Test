@@ -16,8 +16,8 @@
   let rThigh = [];
   let lThigh = [];
   let thighLength = 70;
-  let rLowerLeg = [200, 440];
-  let llowerLeg = [100, 440];
+  let rLowerLeg = [];
+  let lLowerLeg = [];
   let lowerLegLength = 70;
   let stopFlag = false;
 
@@ -42,7 +42,7 @@
     globalToneArray = getGlobalToneArray(0);
     setStickman(globalToneArray);
     drawStickman();
-    console.log(lowerLegLength);
+    console.log(lLowerLeg);
   }
   
   
@@ -97,27 +97,27 @@
     ctx.beginPath();
     ctx.moveTo(...waist);
     ctx.lineTo(...rThigh);
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = "magenta";
     ctx.stroke();
     
     // 右下腿
     ctx.beginPath();
     ctx.moveTo(...rThigh);
     ctx.lineTo(...rLowerLeg);
-    ctx.strokeStyle = "gray";
+    ctx.strokeStyle = "red";
     ctx.stroke();
   
     // 左腿
     ctx.beginPath();
     ctx.moveTo(...waist);
     ctx.lineTo(...lThigh);
-    ctx.strokeStyle = "yellow";
+    ctx.strokeStyle = "pink";
     ctx.stroke();
     
     // 左下腿
     ctx.beginPath();
     ctx.moveTo(...lThigh);
-    ctx.lineTo(...llowerLeg);
+    ctx.lineTo(...lLowerLeg);
     ctx.strokeStyle = "purple";
     ctx.stroke();
   }
@@ -132,7 +132,6 @@
     llowerLeg = [100, 440];
   
     drawStickman();
-  
     canvas.style.left = "0px";
   }
   
@@ -191,27 +190,26 @@
   }
   
   // 角度をもとに体のパーツの位置を計算
-  function getBodyPartPositions(baseBodyPart, angleRight, angleLeft, length) {
-    rightPart = getArraySummingArrayAngle(baseBodyPart, angleRight, length);
-    leftPart = getArraySummingArrayAngle(baseBodyPart, angleLeft, length);
-    return [rightPart, leftPart];
+  function getBodyPartPosition(baseBodyPart, bodyPartAngle, length) {
+    bodyPartPosition = getArraySummingArrayAngle(baseBodyPart, bodyPartAngle, length);
+    return bodyPartPosition;
   }
   
   // 体の位置初期計算・更新
   function setStickman(toneArray) {
     upperArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 1/2, Math.PI * 1/6);
-    lowerArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 4/5, Math.PI * 1/7);
-    thighAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 5/12, Math.PI * 1/6);
+    lowerArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 2/5, Math.PI * 1/7);
+    thighAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 11/24, Math.PI * 1/6);
     lowerLegAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 7/12, Math.PI * 1/7);
   
-    rUpperArm = getBodyPartPositions(shoulder, ...upperArmAngles, upperArmLength)[0];
-    lUpperArm = getBodyPartPositions(shoulder, ...upperArmAngles, upperArmLength)[1];
-    rLowerArm = getBodyPartPositions(shoulder, ...lowerArmAngles, lowerArmLength)[0];
-    lLowerArm = getBodyPartPositions(shoulder, ...lowerArmAngles, lowerArmLength)[1];
-    rThigh = getBodyPartPositions(shoulder, ...thighAngles, thighLength)[0];
-    lThigh = getBodyPartPositions(shoulder, ...thighAngles, thighLength)[1];
-    rLowerLeg = getBodyPartPositions(shoulder, ...lowerLegAngles, lowerLegLength)[0];
-    lLowerLeg = getBodyPartPositions(shoulder, ...lowerLegAngles, lowerLegLength)[1];
+    rUpperArm = getBodyPartPosition(shoulder, upperArmAngles[0], upperArmLength);
+    lUpperArm = getBodyPartPosition(shoulder, upperArmAngles[1], upperArmLength);
+    rLowerArm = getBodyPartPosition(rUpperArm, lowerArmAngles[0], lowerArmLength);
+    lLowerArm = getBodyPartPosition(lUpperArm, lowerArmAngles[1], lowerArmLength);
+    rThigh = getBodyPartPosition(waist, thighAngles[0], thighLength);
+    lThigh = getBodyPartPosition(waist, thighAngles[1], thighLength);
+    rLowerLeg = getBodyPartPosition(rThigh, lowerLegAngles[0], lowerLegLength);
+    lLowerLeg = getBodyPartPosition(lThigh, lowerLegAngles[1], lowerLegLength);
   }
   
   async function run() {
