@@ -10,8 +10,8 @@ let armLength = 100;
 let rUpperArm = [,];
 let lUpperArm = [,];
 let UpperArmLength = 50;
-let rhand = [,];
-let lhand = [,];
+let rLowerArm = [,];
+let lLowerArm = [,];
 let lowerArmLength = 50;
 let rThigh = [,];
 let lThigh = [,];
@@ -49,7 +49,7 @@ function drawStickman() {
   // 右前腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...rHand);
+  ctx.lineTo(...rLowerArm);
   ctx.stroke();
   
   // 左上腕
@@ -61,7 +61,7 @@ function drawStickman() {
   // 左前腕
   ctx.beginPath();
   ctx.moveTo(...shoulder);
-  ctx.lineTo(...rHand);
+  ctx.lineTo(...rLowerArm);
   ctx.stroke();
   
   // 右腿
@@ -115,11 +115,16 @@ drawStickman();
 
 
 
-let globalAngle = 0;
-let deltaGlobalAngle = Math.PI * 1/180;
 let canvasLeft;
 let canvasLeftInt;
 let CanvasBoxMovingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
+let globalAngle = 0;
+let globalAngleDelta = Math.PI * 1/180;
+let globalToneArray = [,];
+let upperArmAngles = [,];
+let lowerArmAngles = [,];
+let thighAngles = [,];
+let lowerLegAngles = [,];
 
 
 function getArraySummingArrayAngle(array1, angle, radius) {
@@ -144,8 +149,8 @@ function getCanvasLeftInt() {
 }
 
 // globalAngleを少しずつ変化させる
-function globalAnglePlusDelta(globalAngle, deltaGLobalAngle) {
-  globalAngle += deltaGlobalAngle;
+function globalAnglePlusDelta(globalAngle, deltaA) {
+  globalAngle += deltaA;
 }
 
 // globalToneR,Lを作る
@@ -156,33 +161,34 @@ function getGlobalToneArray(globalAngle) {
 }
 
 // 体のパーツの各角度を計算
-function getArrayContainsPartsAngles(gToneR, gToneL, basePosition, amplitude) {
-  let aL = basePosition + amplitude * gToneL;
-  let aR = basePosition + amplitude * gToneR;
+function getBodyPartAnglesArray(gToneR, gToneL, baseAngle, amplitude) {
+  let aL = baseAngle + amplitude * gToneL;
+  let aR = baseAngle + amplitude * gToneR;
   return [aR, aL];
 }
 
-// 上腕の位置をセット
-function setUpperArmsPosition(upperArmAR, upperArmAL) {
-  rUpperArm = getArraySummingArrayAngle(shoulder, upperArmAR, upperArmLength)
-  lUpperArm = getArraySummingArrayAngle(shoulder, upperArmAL, upperArmLength)
+// 角度をもとに体のパーツの位置を計算
+function getBodyPartPositions(baseBodyPart, angleRight, angleLeft, length) {
+  rightPart = getArraySummingArrayAngle(baseBodyPart, angleRight, length);
+  leftPart = getArraySummingArrayAngle(baseBodyPart, angleLeft, length);
+  return [rightPart, leftPart];
 }
 
-// 前腕の位置更新
-function setHandsPosition(handAR, handAL) {
-  rHand = getArraySummingArrayAngle(rUpperArm, handAR, armLength);
-  lHand = getArraySummingArrayAngle(lUpperArm, (Math.PI - globalRhythmedAngleL), armLength);
-}
-
-// 大腿の位置を計算
-function makeKneePositionFromGlobalRhythmedAngle(globalRhythmedAngle) {
-  rLowerLeg = getArraySummingArrayAngle(waist, globalRhythmedAngle, lowerLegLength);
-  lLowerLeg = getArraySummingArrayAngle(waist, globalRhythmedAngle)
-}
-
-// 下腿の位置を計算
-function makeFeetPositionFromGlobalRhythmedAngle(globalRhythmedAngle) {
-
+// 体の位置初期計算・更新
+function setStickman(toneArray) {
+  upperArmAngles = getBodyPartAnglesArray(...toneArray, Math,PI * 1/2, Math.PI * 1/6);
+  lowerArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 4/5, Math.PI * 1/7);
+  thighAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 5/12, Math.PI * 1/6);
+  lowerLegAngle = getBodyPartAnglesArray(...toneArray, Meth.PI * 7/12, Math.PI * 1/7);
+  
+  rUpperArm = getBodyPartPositions(shoulder, ...upperArmAngles, upperArmLength)[0];
+  lUpperArm = getBodyPartPositions(shoulder, ...upperArmAngles, upperArmLength)[1];
+  rLowerArm = getBodyPartPositions(shoulder, ...lowerArmAngles, upperArmLength)[0];
+  lLowerArm = getBodyPartPositions(shoulder, ...lowerArmAngles, upperArmLength)[1];
+  rThigh = getBodyPartPositions(shoulder, ...thighAngles, upperArmLength)[0];
+  lThigh = getBodyPartPositions(shoulder, ...thighAngles, upperArmLength)[1];
+  rLowerLeg = getBodyPartPositions(shoulder, ...lowerLegAngles, upperArmLength)[0];
+  lLowerLeg = getBodyPartPositions(shoulder, ...lowerLegAngles, upperArmLength)[1];
 }
 
 async function run() {
@@ -192,28 +198,11 @@ async function run() {
     await timeout(2);
     canvas.style.left = canvasLeftInt + 1 + "px";
     
-    // 手足の位置更新
-    rLowerLeg[0] = rLowerLeg[0] + rLowerLegPositionIncrement;
-    llowerLeg[0] = llowerLeg[0] + -rLowerLegPositionIncrement;
-    rArmAngle += rArmAngleIncrement;
-    renewHandPosition(rArmAngle);
+    // 体の位置更新
+    globalAnglePlusDelta(globalAngle, globalAngleDelta);
+    globalToneArray = getGlobalToneArray(globalAngle);
+    setStickman(globalToneArray);
     drawStickman();
-
-    // 手足の移動制限+方向転換
-    if(rLowerLeg[0] <= 100 && rLowerLegPositionIncrement == -1) {
-      rLowerLegPositionIncrement = 1;
-    }
-    else if(200 <= rLowerLeg[0] && rLowerLegPositionIncrement == 1) {
-      rLowerLegPositionIncrement = -1;
-    }
-    else {
-    }
-    if(rArmAngle >= Math.PI * 2/3 && rArmAngleIncrement > 0) {
-      rArmAngleIncrement = -rArmAngleIncrement;
-    }
-    else if(rArmAngle <= Math.PI * 1/3 && rArmAngleIncrement < 0) {
-      rArmAngleIncrement = -rArmAngleIncrement;
-    }
 
 
     if(getCanvasLeftInt() > CanvasBoxMovingRangeInt) {
@@ -226,6 +215,12 @@ async function run() {
   }
 
   console.log("function ended.");
+}
+
+function firstDrawStickman() {
+  globalToneArray = getGlobalToneArray(0);
+  setStickman(globalToneArray);
+  drawStickman();
 }
 
 start.addEventListener("click", async () => {
@@ -242,3 +237,5 @@ start.addEventListener("click", async () => {
 reset.addEventListener("click", () => {
   resetStickman();
 })
+
+firstDrawStickman();
