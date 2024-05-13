@@ -122,18 +122,18 @@
     ctx.stroke();
   }
   
-  function resetStickman() {
-    neck = [150, 200];
-    shoulder = [150, 230];
-    rArm = [200, 270];
-    lArm = [100, 270];
-    waist = [150, 330];
-    rLowerLeg = [200, 440];
-    llowerLeg = [100, 440];
+  // function resetStickman() {
+  //   neck = [150, 200];
+  //   shoulder = [150, 230];
+  //   rArm = [200, 270];
+  //   lArm = [100, 270];
+  //   waist = [150, 330];
+  //   rLowerLeg = [200, 440];
+  //   llowerLeg = [100, 440];
   
-    drawStickman();
-    canvas.style.left = "0px";
-  }
+  //   drawStickman();
+  //   canvas.style.left = "0px";
+  // }
   
   drawStickman();
   
