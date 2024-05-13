@@ -26,7 +26,7 @@
   let canvasLeftInt;
   let CanvasBoxMovingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
   let globalAngle = 0;
-  let globalAngleDelta = Math.PI * 1/180;
+  let globalAngleDelta = Math.PI * 1/100;
   let globalToneArray = [];
   let upperArmAngles = [];
   let lowerArmAngles = [];
@@ -42,7 +42,6 @@
     globalToneArray = getGlobalToneArray(0);
     setStickman(globalToneArray);
     drawStickman();
-    console.log(lLowerLeg);
   }
   
   
@@ -169,6 +168,13 @@
     canvasLeftInt = parseInt(canvasLeft);
     return canvasLeftInt;
   }
+
+  // ボックス移動の速度をコントロースする
+  function controlBoxMovingSpeed(delta) {
+    let changeValue = Math.floor(delta * 50);
+    canvas.style.left = getCanvasLeftInt() + changeValue + "px";
+    console.log(changeValue);
+  }
   
   // globalAngleを少しずつ変化させる
   function globalAnglePlusDelta(deltaA) {
@@ -197,10 +203,10 @@
   
   // 体の位置初期計算・更新
   function setStickman(toneArray) {
-    upperArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 1/2, Math.PI * 1/6);
-    lowerArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 2/5, Math.PI * 1/7);
-    thighAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 11/24, Math.PI * 1/6);
-    lowerLegAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 7/12, Math.PI * 1/7);
+    upperArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 14/24, Math.PI * 1/6);
+    lowerArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 1/24, Math.PI * 1/7);
+    thighAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 11/24, Math.PI * 3/12);
+    lowerLegAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 8/12, Math.PI * 1/7);
   
     rUpperArm = getBodyPartPosition(shoulder, upperArmAngles[0], upperArmLength);
     lUpperArm = getBodyPartPosition(shoulder, upperArmAngles[1], upperArmLength);
@@ -217,7 +223,7 @@
   
     while(getCanvasLeftInt() <= parseInt(window.innerWidth)) { 
       await timeout(2);
-      canvas.style.left = canvasLeftInt + 1 + "px";
+      controlBoxMovingSpeed(globalAngleDelta);
       
       // 体の位置更新
       globalAnglePlusDelta(globalAngleDelta);
@@ -249,7 +255,7 @@
     }
   });
   
-  reset.addEventListener("click", () => {
-    resetStickman();
-  })
+  // reset.addEventListener("click", () => {
+  //   resetStickman();
+  // })
 })();
