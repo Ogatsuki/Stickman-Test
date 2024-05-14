@@ -7,6 +7,9 @@ body {
 }
 
 .l-cWrapper {
+  width: 100%;
+  height: 100vh;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -14,6 +17,6 @@ body {
   border: 1px solid #333;
   position: absolute;
   top: 50px;
-  left: 0;
+  left: -500px;
   display: block;
 }
