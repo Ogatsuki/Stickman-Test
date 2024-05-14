@@ -1,8 +1,30 @@
-(function() {
+const start = document.getElementById("start");
+const cWrapper = document.querySelector(".l-cWrapper");
+let canvasWidth = 300;
+let canvasHeight = 500;
+let num = 1;
+
+start.addEventListener("click", () => {
+  let newCanvas = document.createElement("canvas");
+  newCanvas.width = canvasWidth;
+  newCanvas.height = canvasHeight;
+  newCanvas.className = "stickman";
+  newCanvas.id = "stickman" + num;
+  cWrapper.appendChild(newCanvas);
+  
+
+
+
+
+
+
+
+
+
+
   // 初期設定ここから----------------------------
-  const canvas = document.getElementById("myCanvas");
-  const start = document.getElementById("start");
-  const reset = document.getElementById("reset");
+  const canvas = document.getElementById("stickman" + num);
+  num ++;
   let ctx = canvas.getContext("2d");
   let neck = [150, 200];
   let shoulder = [150, 230];
@@ -19,34 +41,47 @@
   let rLowerLeg = [];
   let lLowerLeg = [];
   let lowerLegLength = 70;
+  let legLength = thighLength + lowerLegLength;
   let stopFlag = false;
 
+  let upperArmBaseAngle = Math.PI * 1/2;
+  let upperArmAngleAmplitude = Math.PI * 1/6;
+  let lowerArmBaseAngle = Math.PI * 5/12;
+  let lowerArmAngleAmplitude = Math.PI * 1/6;
+  let thighBaseAngle = Math.PI * 11/24;
+  let thighAngleAmplitude = Math.PI * 1/6;
+  let lowerLegBaseAngle = Math.PI * 7/12;
+  let lowerLegAngleAmplitude = Math.PI * 1/7;
 
   let canvasLeft;
   let canvasLeftInt;
   let CanvasBoxMovingRangeInt = parseInt(window.innerWidth) - parseInt(window.getComputedStyle(canvas).width);
   let globalAngle = 0;
-  let globalAngleDelta = Math.PI * 1/100;
+  let globalAngleDelta = Math.PI * 1/80;
   let globalToneArray = [];
   let upperArmAngles = [];
   let lowerArmAngles = [];
   let thighAngles = [];
   let lowerLegAngles = [];
 
-
-
-
-  firstDrawStickman();
-
-  function firstDrawStickman() {
-    globalToneArray = getGlobalToneArray(0);
-    setStickman(globalToneArray);
-    drawStickman();
+  // 足が地面をける速さ（概算）
+  let speed = Math.floor(legLength * globalAngleDelta) - 2;
+  if(speed <= 0) {
+    speed = 1;
   }
-  
-  
-  
-  
+  // 初期設定ここまで------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+  // 描画関数ここから-----------------------------------------
   function drawStickman() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   
@@ -120,34 +155,21 @@
     ctx.strokeStyle = "purple";
     ctx.stroke();
   }
-  
-  // function resetStickman() {
-  //   neck = [150, 200];
-  //   shoulder = [150, 230];
-  //   rArm = [200, 270];
-  //   lArm = [100, 270];
-  //   waist = [150, 330];
-  //   rLowerLeg = [200, 440];
-  //   llowerLeg = [100, 440];
-  
-  //   drawStickman();
-  //   canvas.style.left = "0px";
-  // }
-  
-  drawStickman();
-  
-  // 初期設定ここまで------------------------------------
-  
-  
-  
-  
-  
-  
-  
-  
+  // 描画関数ここまで---------------------------------------------
 
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+  //横移動の関数ここから------------------------------ 
   function getArraySummingArrayAngle(array1, angle, radius) {
     let arrayA = [];
     arrayA[0] = array1[0] + radius * Math.cos(angle);
@@ -170,10 +192,8 @@
   }
 
   // ボックス移動の速度をコントロースする
-  function controlBoxMovingSpeed(delta) {
-    let changeValue = Math.floor(delta * 50);
-    canvas.style.left = getCanvasLeftInt() + changeValue + "px";
-    console.log(changeValue);
+  function controlBoxMovingSpeed() {
+    canvas.style.left = getCanvasLeftInt() + speed + "px";
   }
   
   // globalAngleを少しずつ変化させる
@@ -203,10 +223,10 @@
   
   // 体の位置初期計算・更新
   function setStickman(toneArray) {
-    upperArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 14/24, Math.PI * 1/6);
-    lowerArmAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 1/24, Math.PI * 1/7);
-    thighAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 11/24, Math.PI * 3/12);
-    lowerLegAngles = getBodyPartAnglesArray(...toneArray, Math.PI * 8/12, Math.PI * 1/7);
+    upperArmAngles = getBodyPartAnglesArray(...toneArray, upperArmBaseAngle, upperArmAngleAmplitude);
+    lowerArmAngles = getBodyPartAnglesArray(...toneArray, lowerArmBaseAngle, lowerArmAngleAmplitude);
+    thighAngles = getBodyPartAnglesArray(...toneArray, thighBaseAngle, thighAngleAmplitude);
+    lowerLegAngles = getBodyPartAnglesArray(...toneArray, lowerLegBaseAngle, lowerLegAngleAmplitude);
   
     rUpperArm = getBodyPartPosition(shoulder, upperArmAngles[0], upperArmLength);
     lUpperArm = getBodyPartPosition(shoulder, upperArmAngles[1], upperArmLength);
@@ -217,45 +237,53 @@
     rLowerLeg = getBodyPartPosition(rThigh, lowerLegAngles[0], lowerLegLength);
     lLowerLeg = getBodyPartPosition(lThigh, lowerLegAngles[1], lowerLegLength);
   }
-  
+  // 横移動の関数ここまで---------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // 実行ここから----------------------------------------
   async function run() {
-    console.log("function started.");
-  
     while(getCanvasLeftInt() <= parseInt(window.innerWidth)) { 
-      await timeout(2);
+      await timeout(16);
+
+      // ボックススピードの制御
       controlBoxMovingSpeed(globalAngleDelta);
       
-      // 体の位置更新
+      // 棒人間の横移動
       globalAnglePlusDelta(globalAngleDelta);
       globalToneArray = getGlobalToneArray(globalAngle);
       setStickman(globalToneArray);
       drawStickman();
-  
-  
-      if(getCanvasLeftInt() > CanvasBoxMovingRangeInt) {
-        stopFlag = true;
+
+
+      // 処理の終了
+      if(getCanvasLeftInt() > parseInt(window.innerWidth)) {
+        cWrapper.removeChild(canvas);
+        break;
       }
+
+      console.log(getCanvasLeftInt() + "  ,     " + parseInt(window.innerWidth));
+      // console.log(parseInt(window.innerWidth));
+
+      // 処理の強制終了
       if(stopFlag) {
-        console.log("moving ended");
         break;
       }
     }
-  
-    console.log("function ended.");
   }
-  
-  start.addEventListener("click", async () => {
-    if(window.getComputedStyle(canvas).left == "0px") {
-      run();
-    }
-    else {
-      canvas.style.left = "0px";
-      await timeout(250);
-      run();
-    }
-  });
-  
-  // reset.addEventListener("click", () => {
-  //   resetStickman();
-  // })
-})();
+
+  run();
+  // 実行ここまで---------------------------------------
+});

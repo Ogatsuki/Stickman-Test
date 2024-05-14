@@ -10,7 +10,7 @@ body {
   position: relative;
 }
 
-#myCanvas {
+.stickman {
   border: 1px solid #333;
   position: absolute;
   top: 50px;
